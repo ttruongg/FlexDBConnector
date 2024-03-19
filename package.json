@@ -3,5 +3,26 @@
     "express": "^4.18.3",
     "mongoose": "^8.2.2",
     "mysql": "^2.18.1"
-  }
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "mongodb-mysql-nodejs",
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttruongg/mongo-mysql-nodejs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ttruongg/mongo-mysql-nodejs/issues"
+  },
+  "homepage": "https://github.com/ttruongg/mongo-mysql-nodejs#readme",
+  "description": ""
 }
