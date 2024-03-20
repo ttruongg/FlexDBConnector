@@ -9,21 +9,21 @@ const dbType = properties.get('database.type')
 const app = express();
 app.use(express.json());
 
-
-let dbConnection;
+console.log(dbType);
 
 if (dbType === 'mysql') {
     dbConnection = require('./app/db/mysqlConfig.js');
+    
 } else if (dbType === 'mongodb') {
-    dbConnection = require('./app/db/mongoConfig.js')
+    require('./app/db/mongoConfig.js')
+    require("./app/routes/mongoRoutes.js")(app)
 } else {
     console.log('Invalid database');
     process.exit(1);
 }
 
 
-require('./app/db/mongoConfig.js')
-require("./app/routes/mongoRoutes.js")(app)
+
 
 
 app.get("/", (req, res) => {
