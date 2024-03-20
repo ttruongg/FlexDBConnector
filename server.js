@@ -12,18 +12,16 @@ app.use(express.json());
 console.log(dbType);
 
 if (dbType === 'mysql') {
-    dbConnection = require('./app/db/mysqlConfig.js');
+    require('./app/db/mysqlConfig.js');
+    require('./app/routes/mysqlRoutes.js');
     
 } else if (dbType === 'mongodb') {
-    require('./app/db/mongoConfig.js')
-    require("./app/routes/mongoRoutes.js")(app)
+    require('./app/db/mongoConfig.js');
+    require("./app/routes/mongoRoutes.js")(app);
 } else {
     console.log('Invalid database');
     process.exit(1);
 }
-
-
-
 
 
 app.get("/", (req, res) => {

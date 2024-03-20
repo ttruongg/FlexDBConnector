@@ -14,6 +14,11 @@ const mysqlConfig = {
 
 const mysqlConnecttion = mysql.createConnection(mysqlConfig);
 
+mysqlConnecttion.connect(function(err){
+    if(err) throw err;
+    console.log('Connected to mysql');
+});
+
 module.exports = mysqlConnecttion;
 
 
