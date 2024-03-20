@@ -1,10 +1,36 @@
-const express = require('express')
+const express = require('express');
+
+const propertiesReader = require('properties-reader');
+const properties = propertiesReader('config.properties');
+
+
+const dbType = properties.get('database.type')
+
 const app = express();
+app.use(express.json());
 
 
-app.get('/', (req, res) => {
-    res.send("Welcome");
-})
+let dbConnection;
+
+if (dbType === 'mysql') {
+    dbConnection = require('./app/db/mysqlConfig.js');
+} else if (dbType === 'mongodb') {
+    dbConnection = require('./app/db/mongoConfig.js')
+} else {
+    console.log('Invalid database');
+    process.exit(1);
+}
+
+
+require('./app/db/mongoConfig.js')
+require("./app/routes/mongoRoutes.js")(app)
+
+
+app.get("/", (req, res) => {
+    res.json({message: "Welcome"})
+});
+
+//require("./app/routes/mongoRoutes.js")(app)
 
 const port = process.env.port || 8080;
 app.listen(port, () => {
