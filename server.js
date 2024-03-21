@@ -16,8 +16,7 @@ if (dbType === "mysql") {
 
 
 } else if (dbType === "mongodb") {
-  
-    require("./app/db/mongoConfig.js");
+    //require("./app/db/mongoConfig.js");
     require("./app/routes/mongoRoutes.js")(app);
 } else {
     console.log("Invalid database");
