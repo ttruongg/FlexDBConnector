@@ -13,11 +13,12 @@ console.log(dbType);
 
 if (dbType === 'mysql') {
     require('./app/db/mysqlConfig.js');
-    require('./app/routes/mysqlRoutes.js');
+    require("./app/routes/mysqlRoutes.js")(app);
     
 } else if (dbType === 'mongodb') {
     require('./app/db/mongoConfig.js');
     require("./app/routes/mongoRoutes.js")(app);
+    
 } else {
     console.log('Invalid database');
     process.exit(1);

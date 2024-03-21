@@ -1,24 +1,10 @@
-const mysql = require('mysql');
-const propertiesReader = require('properties-reader');
-const properties = propertiesReader('config.properties');
+const mysql = require('mysql2/promise');
+const propertiesReader = require("properties-reader");
+const properties = propertiesReader("config.properties");
 
-
-const mysqlConfig = {
-    host: properties.get('mysql.host'),
-    port: properties.get('mysql.port'),
-    user: properties.get('mysql.user'),                    
-    password: properties.get('mysql.password'),
-    database: properties.get('mysql.database')
-};
-
-
-const mysqlConnecttion = mysql.createConnection(mysqlConfig);
-
-mysqlConnecttion.connect(function(err){
-    if(err) throw err;
-    console.log('Connected to mysql');
+const pool = mysql.createPool({
+  host: properties.get('mysql.host'),
+  user: properties.get('mysql.user'),
+  password: properties.get('mysql.password'),
+  database: properties.get('mysql.database')
 });
-
-module.exports = mysqlConnecttion;
-
-

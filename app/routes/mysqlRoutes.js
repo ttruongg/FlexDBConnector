@@ -3,7 +3,8 @@ module.exports = (app) => {
 
     var router = require("express").Router();
 
-    router.post("data/mysql", user.create);
+    router.get("/data/mysql", user.getAll);
+
 
 
     app.use("/api/user", router);
