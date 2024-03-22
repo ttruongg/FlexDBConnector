@@ -30,7 +30,8 @@ mongoose.connect(url, {
     });
 
 const mongoConnection = mongoose.connection;
-module.exports = mongoConnection;
+
+module.exports = {url, mongoConnection};
 
 
 
