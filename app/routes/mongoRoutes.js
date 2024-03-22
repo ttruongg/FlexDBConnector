@@ -9,7 +9,11 @@ module.exports = (app) => {
     //findAll
     router.get("/data/mongo", user.findAll);
 
+    //update
+    router.put("/data/mongo/:id", user.update);
 
+    //delete
+    router.delete("/data/mongo/:id", user.delete);
     
 
     app.use("/api/user", router);
