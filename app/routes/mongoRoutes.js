@@ -3,9 +3,6 @@ module.exports = (app) => {
 
     var router = require("express").Router();
 
-    //create
-    router.post("/data/mongo", user.create);
-
     //findAll
     router.get("/data/mongo", user.findAll);
 
@@ -14,7 +11,12 @@ module.exports = (app) => {
 
     //delete
     router.delete("/data/mongo/:id", user.delete);
+
+    //find
+    router.post("/data/mongo/find", user.executeQuery);
     
+    //insert 
+    router.post("/data/mongo/insert", user.insertRecord);
 
     app.use("/api/user", router);
 

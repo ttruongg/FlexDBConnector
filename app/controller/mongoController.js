@@ -9,31 +9,31 @@ db.url = dbConfig.url;
 db.user = require("../model/mongoModel.js")(mongoose);
 
 const User = db.user;
-exports.create = (req, res) => {
-  if (!req.body.name) {
-    res.status(400).send({ message: "Can not empty" });
-    return;
-  }
+// exports.create = (req, res) => {
+//   if (!req.body.name) {
+//     res.status(400).send({ message: "Can not empty" });
+//     return;
+//   }
 
-  //create
-  const user = new User({
-    name: req.body.name,
-    age: req.body.age,
-    email: req.body.email,
-  });
+//   //create
+//   const user = new User({
+//     name: req.body.name,
+//     age: req.body.age,
+//     email: req.body.email,
+//   });
 
-  //save
-  user
-    .save(user)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Error occurred",
-      });
-    });
-};
+//   //save
+//   user
+//     .save(user)
+//     .then((data) => {
+//       res.send(data);
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         message: err.message || "Error occurred",
+//       });
+//     });
+// };
 
 exports.findAll = (req, res) => {
   const name = req.query.name;
@@ -94,4 +94,61 @@ exports.delete = (req, res) => {
         message: "Could not delete with id=" + id,
       });
     });
+};
+
+exports.executeQuery = async (req, res) => {
+  const { collection, query } = req.body;
+
+  try {
+    if (collection !== User.collection.name) {
+      return res
+        .status(404)
+        .json({ error: `Collection '${collection}' not found` });
+    }
+
+    const result = await User.find(query).lean();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// exports.insertData = async (req, res) => {
+//   const { collection, fields } = req.body;
+
+//   try {
+//     if (collection !== User.collection.name) {
+//       // Nếu collection chưa tồn tại, tạo collection mới
+//       const newCollection = mongoose.model(collection, new mongoose.Schema({}));
+//       await newCollection.createCollection();
+//     }
+
+//     const newDocument = new newCollection(fields);
+
+//     await newDocument.save();
+
+//     res.json({ message: "inserted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+exports.insertRecord = async (req, res) => {
+  const { collection, records } = req.body;
+
+    try {
+        
+        const existingCollection = mongoose.connection.collections[collection];
+        if (!existingCollection) {
+            
+            await mongoose.connection.createCollection(collection);
+        }
+
+        
+        await mongoose.connection.collection(collection).insertMany(records);
+
+        res.json({ message: 'Data inserted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
