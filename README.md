@@ -20,4 +20,16 @@ These are APIs that Node.js Express will export:
 | DELETE   | api/user/data/mongo | get all Users |
 
 In the case of MySQL, change to mongo URLs to mysql.
+<br>
 Example: api/user/data/<b>mongo</b> to api/user/data/<b>mysql</b>
+
+<hr>
+
+Test API with Insomnia or Postman, it's up to you.
+
+For example: Find users with an age greater than or equal to 30.
+
+![screen](https://github.com/ttruongg/FlexDBConnector/assets/106587727/13b266f1-9f66-4765-a22f-e10c99523a89)
+
+
+
