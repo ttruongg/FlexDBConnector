@@ -96,24 +96,38 @@ exports.delete = (req, res) => {
     });
 };
 
+//   const { collection, query } = req.body;
+
+//   try {
+//     if (collection !== User.collection.name) {
+//       return res
+//         .status(404)
+//         .json({ error: `Collection '${collection}' not found` });
+//     }
+
+//     const result = await User.find(query).lean();
+//     res.json(result);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+//////////////////////// valid
+
 exports.executeQuery = async (req, res) => {
   const { collection, query } = req.body;
 
   try {
-    if (collection !== User.collection.name) {
-      return res
-        .status(404)
-        .json({ error: `Collection '${collection}' not found` });
-    }
-
-    const result = await User.find(query).lean();
+    
+    const result = await mongoose.connection.db.collection(collection).find(query).toArray();
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// exports.insertData = async (req, res) => {
+
+
 //   const { collection, fields } = req.body;
 
 //   try {
@@ -128,6 +142,33 @@ exports.executeQuery = async (req, res) => {
 //     await newDocument.save();
 
 //     res.json({ message: "inserted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+// exports.executeQuery = async (req, res) => {
+//   const { collection, query } = req.body;
+
+//   try {
+//     let dbQuery = {};
+
+    
+//     for (const condition of query) {
+      
+//       if ('$or' in condition) {
+       
+//         dbQuery['$or'] = condition['$or'];
+//       } else {
+        
+//         Object.assign(dbQuery, condition);
+//       }
+//     }
+
+    
+//     const result = await mongoose.connection.db.collection(collection).find(dbQuery).toArray();
+//     res.json(result);
 //   } catch (error) {
 //     res.status(500).json({ error: error.message });
 //   }

@@ -9,6 +9,7 @@ module.exports = (app) => {
     router.delete("/data/mysql/:id", user.delete);
     router.put("/data/mysql/:id", user.update);
 
+    router.post("/data/mongo/find", user.queryUsers);
 
 
     app.use("/api/user", router);
