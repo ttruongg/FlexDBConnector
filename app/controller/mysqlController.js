@@ -61,13 +61,21 @@ exports.update = (req, res) => {
 exports.queryUsers = (req, res) => {
   const { collection, query } = req.body;
 
-  const field = Object.keys(query)[0];
-  const operator = Object.keys(query[field])[0];
-  const value = query[field][operator];
+  let queryString = `SELECT * FROM ${collection} WHERE `;
+  const values = [];
 
-  const queryString = `SELECT * FROM ${collection} WHERE ${field} ${operator} ?`;
+  // Tạo điều kiện từ mỗi cặp key-value trong query
+  const conditions = [];
+  for (const field in query) {
+    const operator = Object.keys(query[field])[0];
+    const value = query[field][operator];
+    conditions.push(`${field} ${operator} ?`);
+    values.push(value);
+  }
 
-  db.query(queryString, [value], (error, results) => {
+  queryString += conditions.join(" AND ");
+
+  db.query(queryString, values, (error, results) => {
     if (error) {
       console.log(error);
       return res.status(500).json({ error: "Internal Server Error" });
