@@ -10,7 +10,7 @@ module.exports = (app) => {
     router.put("/data/mongo/:id", user.update);
 
     //delete
-    router.delete("/data/mongo/:id", user.delete);
+    router.post("/data/mongo/delete", user.delete);
 
     //find
     router.post("/data/mongo/find", user.executeQuery);
