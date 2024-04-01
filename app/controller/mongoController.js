@@ -26,55 +26,70 @@ exports.findAll = (req, res) => {
     });
 };
 
-exports.update = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not empty!",
-    });
-  }
+exports.update = async (req, res) => {
+  const { collection, _id, values } = req.body;
 
-  const id = req.params.id;
-  User.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `there is not this id = ${id}. Can not update`,
-        });
-      } else res.send({ message: "Updated successfully" });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "update error with id = " + id,
-      });
-    });
+  try {
+    let filter = {};
+
+    // Kiểm tra xem id có hợp lệ không
+    if (_id) {
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+
+      filter._id = new mongoose.Types.ObjectId(_id);
+    } else {
+      return res.status(400).json({ error: "Document ID is required" });
+    }
+
+    if (!values || Object.keys(values).length === 0) {
+      return res.status(400).json({ error: "No update fields provided" });
+    }
+
+    // Thực hiện cập nhật
+    const result = await mongoose.connection.db
+      .collection(collection)
+      .updateOne(
+        filter, // Bộ lọc để xác định tài liệu cần cập nhật
+        { $set: values } // Các trường cập nhật
+      );
+
+    // Kiểm tra xem có tài liệu nào được cập nhật hay không
+    if (result.modifiedCount === 1) {
+      res.json({ message: "Document updated successfully!" });
+    } else {
+      res
+        .status(404)
+        .json({ error: "Document not found or no changes were made" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 exports.delete = async (req, res) => {
   const { collection, _id, condition } = req.body;
 
   try {
-    let filter = {}; 
+    let filter = {};
 
     if (_id) {
-      
       if (!mongoose.Types.ObjectId.isValid(_id)) {
         return res.status(400).json({ error: "Invalid document ID" });
       }
-      
-      filter._id = mongoose.Types.ObjectId(_id);
+
+      filter._id = new mongoose.Types.ObjectId.createFromTime(_id);
     }
 
-   
     if (condition) {
       filter = { ...filter, ...condition };
     }
 
-    
     const result = await mongoose.connection.db
       .collection(collection)
       .deleteOne(filter);
 
-    
     if (result.deletedCount === 1) {
       res.json({ message: "Deleted successfully!" });
     } else {
