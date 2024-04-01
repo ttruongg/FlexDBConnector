@@ -7,9 +7,9 @@ module.exports = (app) => {
     router.get("/data/mongo", user.findAll);
 
     //update
-    router.put("/data/mongo/:id", user.update);
+    router.post("/data/mongo/update", user.update);
 
-    //delete
+    //deletes
     router.post("/data/mongo/delete", user.delete);
 
     //find
