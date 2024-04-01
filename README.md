@@ -46,13 +46,14 @@ Update email and work_exp of user
 
 Change the value of collection, _id, and value to update according to your database. <br>
 Example: <br>
+
 ```bash
 {
     "collection": "your_collection",   
-		"_id": "if_of_document_need_to_be_updated",
+    "_id": "if_of_document_need_to_be_updated",
     "values": 
         {
-						// new value 
+	// new value 
         }
 }
 ```
