@@ -18,6 +18,9 @@ module.exports = (app) => {
     //insert 
     router.post("/data/mongo/insert", user.insertRecord);
 
+    //aggregate
+    router.post("/data/mongo/aggregate", user.aggregate);
+
     app.use("/api/user", router);
 
 

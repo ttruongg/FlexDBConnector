@@ -79,7 +79,7 @@ exports.delete = async (req, res) => {
         return res.status(400).json({ error: "Invalid document ID" });
       }
 
-      filter._id = new mongoose.Types.ObjectId.createFromTime(_id);
+      filter._id = new mongoose.Types.ObjectId(_id);
     }
 
     if (condition) {
@@ -129,4 +129,21 @@ exports.insertRecord = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
+
+exports.aggregate = async (req, res) => {
+  const { collection, pipeline } = req.body;
+
+  try {
+    if (!pipeline || !Array.isArray(pipeline)) {
+      return res.status(400).json({ error: "Pipeline must be an array"});
+    }
+
+    const result = await mongoose.connection.db.collection(collection).aggregate(pipeline).toArray();
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message});
+  }
+
 };
