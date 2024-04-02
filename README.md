@@ -1,6 +1,6 @@
 ## FlexDBConnector
 
-FlexDBConnector is an API designed to facilitate interactions with MongoDB and MySQL databases. Offering a flexible approach, it empowers users to effortlessly manage essential CRUD operations, including data insertion, deletion, and modification.
+FlexDBConnector is an API designed to facilitate interactions with MongoDB and MySQL databases. Offering a flexible approach, it empowers users to effortlessly manage essential CRUD operations, including data insertion, deletion, and modification. You just need to set up the parameters to connect to the database, and the API will assist you in interacting with all the collections available in that database.
 
 <hr>
 
@@ -23,8 +23,8 @@ These are APIs that Node.js Express will export:
 | GET   | api/user/data/mongo | get all Users |
 | POST   | api/user/data/mongo/insert | Add one or more users |
 | POST   | api/user/data/mongo/find | find by condition |
-| POST   | api/user/data/mongo/delete | delete user with specific id or condition|
-| PUT   | api/user/data/mongo/:id | update user by id |
+| POST   | api/user/data/mongo/delete | delete document with specific id or condition|
+| POST   | api/user/data/mongo/update | update document by id |
 
 
 In the case of MySQL, change to mongo URLs to mysql.
@@ -38,6 +38,25 @@ Test API with Insomnia or Postman, it's up to you.
 For example: Find users with an age greater than or equal to 30.
 
 ![screen](https://github.com/ttruongg/FlexDBConnector/assets/106587727/13b266f1-9f66-4765-a22f-e10c99523a89)
+
+
+Update email and work_exp of user 
+
+![image](https://github.com/ttruongg/FlexDBConnector/assets/106587727/d35002c7-c93a-4aa7-b180-03f3edafeebe)
+
+Change the value of collection, _id, and value to update according to your database. <br>
+Example: <br>
+
+```bash
+{
+    "collection": "your_collection",   
+    "_id": "if_of_document_need_to_be_updated",
+    "values": 
+        {
+	// new value 
+        }
+}
+```
 
 
 
