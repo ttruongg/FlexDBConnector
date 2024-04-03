@@ -25,9 +25,9 @@ These are APIs that Node.js Express will export:
 | POST   | api/user/data/mongo/find | find by condition |
 | POST   | api/user/data/mongo/delete | delete document with specific id or condition|
 | POST   | api/user/data/mongo/update | update document by id |
+| POST   | api/user/data/mongo/aggregate | allow you to group, sort, perform calculations, analyze data, and much more |
 
 
-In the case of MySQL, change to mongo URLs to mysql.
 <br>
 Example: api/user/data/<b>mongo</b> to api/user/data/<b>mysql</b>
 
@@ -35,7 +35,9 @@ Example: api/user/data/<b>mongo</b> to api/user/data/<b>mysql</b>
 
 Test API with Insomnia or Postman, it's up to you.
 
-For example: Find users with an age greater than or equal to 30.
+<b> For example: </b>
+
+Find users with an age greater than or equal to 30.
 
 ![screen](https://github.com/ttruongg/FlexDBConnector/assets/106587727/13b266f1-9f66-4765-a22f-e10c99523a89)
 
@@ -57,6 +59,10 @@ Example: <br>
         }
 }
 ```
+
+Aggregation $lookup 
+
+![image](https://github.com/ttruongg/FlexDBConnector/assets/106587727/ddc2bffb-9d92-4d22-9c29-7a4492b5a49f)
 
 
 
