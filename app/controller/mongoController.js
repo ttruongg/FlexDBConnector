@@ -3,12 +3,17 @@ const dbConfig = require("../db/mongoConfig.js");
 const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
-const db = {};
-db.mongoose = mongoose;
-db.url = dbConfig.url;
-db.user = require("../model/mongoModel.js")(mongoose);
+const propertiesReader = require("properties-reader");
+const properties = propertiesReader("config.properties");
 
-const User = db.user;
+const dbType = properties.get("database.type");
+
+// const db = {};
+// db.mongoose = mongoose;
+// db.url = dbConfig.url;
+// db.user = require("../model/mongoModel.js")(mongoose);
+
+//const User = db.user;
 
 exports.findAll = (req, res) => {
   const name = req.query.name;
@@ -90,8 +95,6 @@ exports.delete = async (req, res) => {
       .collection(collection)
       .deleteOne(filter);
 
-    
-
     if (result.deletedCount === 1) {
       res.json({ message: "Deleted successfully!" });
       deleteUser(collection, _id);
@@ -119,14 +122,19 @@ async function deleteUser(collection, userId) {
 exports.executeQuery = async (req, res) => {
   const { collection, query } = req.body;
 
-  try {
-    const result = await mongoose.connection.db
-      .collection(collection)
-      .find(query)
-      .toArray();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  if (dbType === "mongodb") {
+    try {
+      const result = await mongoose.connection.db
+        .collection(collection)
+        .find(query)
+        .toArray();
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  } else {
+    
+
   }
 };
 
