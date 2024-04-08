@@ -90,8 +90,11 @@ exports.delete = async (req, res) => {
       .collection(collection)
       .deleteOne(filter);
 
+    
+
     if (result.deletedCount === 1) {
       res.json({ message: "Deleted successfully!" });
+      deleteUser(collection, _id);
     } else {
       res.status(404).json({ error: "Document not found" });
     }
@@ -99,6 +102,19 @@ exports.delete = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+async function deleteUser(collection, userId) {
+  // const db = await connectToDatabase();
+  try {
+    await mongoose.connection.db
+      .collection(collection)
+      .deleteMany({ user_id: userId });
+    console.log("User and related jobs deleted successfully");
+  } catch (error) {
+    console.error("Error deleting user and related jobs:", error);
+    throw error;
+  }
+}
 
 exports.executeQuery = async (req, res) => {
   const { collection, query } = req.body;
@@ -136,14 +152,16 @@ exports.aggregate = async (req, res) => {
 
   try {
     if (!pipeline || !Array.isArray(pipeline)) {
-      return res.status(400).json({ error: "Pipeline must be an array"});
+      return res.status(400).json({ error: "Pipeline must be an array" });
     }
 
-    const result = await mongoose.connection.db.collection(collection).aggregate(pipeline).toArray();
+    const result = await mongoose.connection.db
+      .collection(collection)
+      .aggregate(pipeline)
+      .toArray();
 
     res.json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message});
+    res.status(500).json({ error: error.message });
   }
-
 };
