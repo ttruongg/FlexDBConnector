@@ -6,6 +6,7 @@
     "sequelize": "^6.37.1"
   },
   "devDependencies": {
+    "mongo-sql": "^6.2.0",
     "mysql2": "^3.9.2",
     "nodemon": "^3.1.0",
     "properties-reader": "^2.3.0"
