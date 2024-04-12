@@ -10,24 +10,12 @@ app.use(express.json());
 
 console.log(dbType);
 
-if (dbType === "mysql") {
 
-  require("./app/routes/mysqlRoutes.js")(app);
-
-
-} else if (dbType === "mongodb") {
-    //require("./app/db/mongoConfig.js");
-    require("./app/routes/mongoRoutes.js")(app);
-} else {
-    console.log("Invalid database");
-    process.exit(1);
-}
+require("./app/routes/mongoRoutes.js")(app);
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome" });
 });
-
-//require("./app/routes/mongoRoutes.js")(app)
 
 const port = process.env.port || 8080;
 app.listen(port, () => {

@@ -1,4 +1,6 @@
-const dbConfig = require("../db/mongoConfig.js");
+//const dbConfig = require("../db/mongoConfig.js");
+
+//const sqlConnection = require("../db/mysqlConfig.js");
 
 const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
@@ -7,13 +9,21 @@ const propertiesReader = require("properties-reader");
 const properties = propertiesReader("config.properties");
 
 const dbType = properties.get("database.type");
-
+const convert = require("../model/operators.js");
 // const db = {};
 // db.mongoose = mongoose;
 // db.url = dbConfig.url;
-// db.user = require("../model/mongoModel.js")(mongoose);
+// //db.user = require("../model/mongoModel.js")(mongoose);
 
-//const User = db.user;
+// const User = db.user;
+
+let config;
+
+if (dbType === "mongodb") {
+  config = require("../db/mongoConfig.js");
+} else {
+  config = require("../db/mysqlConfig.js");
+}
 
 exports.findAll = (req, res) => {
   const name = req.query.name;
@@ -35,38 +45,54 @@ exports.update = async (req, res) => {
   const { collection, _id, values } = req.body;
 
   try {
-    let filter = {};
+    if (dbType === "mongodb") {
+      let filter = {};
 
-    // Kiểm tra xem id có hợp lệ không
-    if (_id) {
-      if (!mongoose.Types.ObjectId.isValid(_id)) {
-        return res.status(400).json({ error: "Invalid document ID" });
+      // Kiểm tra xem id có hợp lệ không
+      if (_id) {
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+          return res.status(400).json({ error: "Invalid document ID" });
+        }
+
+        filter._id = new mongoose.Types.ObjectId(_id);
+      } else {
+        return res.status(400).json({ error: "Document ID is required" });
       }
 
-      filter._id = new mongoose.Types.ObjectId(_id);
+      if (!values || Object.keys(values).length === 0) {
+        return res.status(400).json({ error: "No update fields provided" });
+      }
+
+      // Thực hiện cập nhật
+      const result = await mongoose.connection.db
+        .collection(collection)
+        .updateOne(
+          filter, // Bộ lọc để xác định tài liệu cần cập nhật
+          { $set: values } // Các trường cập nhật
+        );
+
+      // Kiểm tra xem có tài liệu nào được cập nhật hay không
+      if (result.modifiedCount === 1) {
+        res.json({ message: "Document updated successfully!" });
+      } else {
+        res
+          .status(404)
+          .json({ error: "Document not found or no changes were made" });
+      }
     } else {
-      return res.status(400).json({ error: "Document ID is required" });
-    }
+      const updateValues = Object.entries(values)
+        .map(([key, value]) => `${key} = ${config.escape(value)}`)
+        .join(", ");
 
-    if (!values || Object.keys(values).length === 0) {
-      return res.status(400).json({ error: "No update fields provided" });
-    }
-
-    // Thực hiện cập nhật
-    const result = await mongoose.connection.db
-      .collection(collection)
-      .updateOne(
-        filter, // Bộ lọc để xác định tài liệu cần cập nhật
-        { $set: values } // Các trường cập nhật
-      );
-
-    // Kiểm tra xem có tài liệu nào được cập nhật hay không
-    if (result.modifiedCount === 1) {
-      res.json({ message: "Document updated successfully!" });
-    } else {
-      res
-        .status(404)
-        .json({ error: "Document not found or no changes were made" });
+      updateString = `UPDATE ${collection} set ${updateValues} where id = ${_id}`;
+      config.query(updateString, (error, results) => {
+        if (error) {
+          console.error("Error updating user:", error);
+          res.status(500).json({ error: "Error updating user" });
+          return;
+        }
+        res.json({ message: "updated successfully" });
+      });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -122,19 +148,27 @@ async function deleteUser(collection, userId) {
 exports.executeQuery = async (req, res) => {
   const { collection, query } = req.body;
 
-  if (dbType === "mongodb") {
-    try {
+  try {
+    if (dbType === "mongodb") {
       const result = await mongoose.connection.db
         .collection(collection)
         .find(query)
         .toArray();
       res.json(result);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    } else {
+      const condition = convert(req.body);
+      sqlString = `SELECT * FROM ${collection} WHERE ${condition}`;
+      config.query(sqlString, (error, results) => {
+        if (error) {
+          console.error("Error executing SQL query: " + error.message);
+          res.status(500).json({ success: false, error: error.message });
+          return;
+        }
+        res.json({ success: true, results });
+      });
     }
-  } else {
-    
-
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
