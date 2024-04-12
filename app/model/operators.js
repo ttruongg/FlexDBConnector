@@ -7,6 +7,13 @@ const operators = [
   { mongodb: "$ne", mysql: "!=" },
 ];
 
+const typeMapping = {
+  'string': 'varchar(255)',
+  'number': 'int',
+  'boolean': 'boolean'
+  // other
+}
+
 function convertQuery(jsonQuery) {
   const { collection, query } = jsonQuery;
   const mysqlQuery = [];
@@ -35,4 +42,9 @@ function convertQuery(jsonQuery) {
   return mysqlQuery.join(" AND ");
 }
 
-module.exports = convertQuery;
+function getColumnType(value){
+  const type = typeof value;
+  return typeMapping[type];
+}
+
+module.exports = {convertQuery, typeMapping, getColumnType};

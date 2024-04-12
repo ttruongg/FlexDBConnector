@@ -156,8 +156,9 @@ exports.executeQuery = async (req, res) => {
         .toArray();
       res.json(result);
     } else {
-      const condition = convert(req.body);
+      const condition = convert.convertQuery(req.body);
       sqlString = `SELECT * FROM ${collection} WHERE ${condition}`;
+      console.log(sqlString);
       config.query(sqlString, (error, results) => {
         if (error) {
           console.error("Error executing SQL query: " + error.message);
@@ -176,16 +177,65 @@ exports.insertRecord = async (req, res) => {
   const { collection, records } = req.body;
 
   try {
-    const existingCollection = mongoose.connection.collections[collection];
-    if (!existingCollection) {
-      await mongoose.connection.createCollection(collection);
+    if (dbType === "mongodb") {
+      const existingCollection = mongoose.connection.collections[collection];
+      if (!existingCollection) {
+        await mongoose.connection.createCollection(collection);
+      }
+
+      await mongoose.connection.collection(collection).insertMany(records);
+
+      res.json({ message: "Data inserted successfully" });
+    } else {
+      const checkTable = `SHOW TABLES LIKE '${collection}'`;
+      config.query(checkTable, (err, rows) => {
+        if (err) {
+          console.error("Error query: ", err);
+          res.status(500).json({ error: "Internal server error" });
+          return;
+        }
+
+        if (rows.length === 0) {
+          const createTable = `CREATE TABLE IF NOT EXISTS ${collection} (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ${Object.entries(records[0])
+              .map(([key, value]) => `${key} ${convert.getColumnType(value)}`)
+              .join(",\n  ")}
+          )`;
+
+          config.query(createTable, (error, result) => {
+            if (error) {
+              console.error("Error when creating table", error);
+              res.status(500).json({ error: "Internal server error" });
+              return;
+            }
+            console.log("Table created");
+            insertData();
+          });
+        } else {
+          insertData();
+        }
+      });
     }
-
-    await mongoose.connection.collection(collection).insertMany(records);
-
-    res.json({ message: "Data inserted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+
+  function insertData() {
+    const insertQuery = `INSERT INTO ${collection} (${Object.keys(
+      records[0]
+    ).join(", ")}) VALUES ?`;
+    const values = records.map((record) => Object.values(record));
+    config.query(insertQuery, [values], (err, result) => {
+      if (err) {
+        console.log(insertQuery);
+        console.error("Error when inserting data", err);
+        res.status(500).json({ error: "Internal server error" });
+        return;
+      }
+      console.log("Data inserted successfully:", result);
+      res.json({ message: "Data inserted successfully" });
+    });
   }
 };
 
