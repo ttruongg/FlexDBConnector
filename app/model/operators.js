@@ -7,6 +7,13 @@ const operators = [
   { mongodb: "$ne", mysql: "!=" },
 ];
 
+const typeMapping = {
+  'string': 'varchar(255)',
+  'number': 'int',
+  'boolean': 'boolean'
+  // other
+}
+
 function convertQuery(jsonQuery) {
   const { collection, query } = jsonQuery;
   const mysqlQuery = [];
@@ -35,4 +42,30 @@ function convertQuery(jsonQuery) {
   return mysqlQuery.join(" AND ");
 }
 
-module.exports = convertQuery;
+function getColumnType(value){
+  const type = typeof value;
+  return typeMapping[type];
+}
+
+function convertDateFields(records) {
+  return records.map(record => {
+      const newRecord = { ...record };
+      for (const key in newRecord) {
+          if (isDateString(newRecord[key])) {
+              newRecord[key] = new Date(newRecord[key]);
+          }
+      }
+      return newRecord;
+  });
+}
+
+
+function isDateString(value){
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+
+
+
+
+module.exports = {convertQuery, typeMapping, getColumnType, convertDateFields};
