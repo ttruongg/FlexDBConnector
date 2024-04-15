@@ -47,4 +47,25 @@ function getColumnType(value){
   return typeMapping[type];
 }
 
-module.exports = {convertQuery, typeMapping, getColumnType};
+function convertDateFields(records) {
+  return records.map(record => {
+      const newRecord = { ...record };
+      for (const key in newRecord) {
+          if (isDateString(newRecord[key])) {
+              newRecord[key] = new Date(newRecord[key]);
+          }
+      }
+      return newRecord;
+  });
+}
+
+
+function isDateString(value){
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+
+
+
+
+module.exports = {convertQuery, typeMapping, getColumnType, convertDateFields};

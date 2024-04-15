@@ -182,8 +182,13 @@ exports.insertRecord = async (req, res) => {
       if (!existingCollection) {
         await mongoose.connection.createCollection(collection);
       }
+      const recordsWithDateConverted = convert.convertDateFields(records);
 
-      await mongoose.connection.collection(collection).insertMany(records);
+      await mongoose.connection
+        .collection(collection)
+        .insertMany(recordsWithDateConverted);
+
+      //await mongoose.connection.collection(collection).insertMany(records);
 
       res.json({ message: "Data inserted successfully" });
     } else {
