@@ -218,12 +218,50 @@ exports.insertRecord = async (req, res) => {
             insertData();
           });
         } else {
-          insertData();
+          checkAndAddColumn();
         }
       });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+
+  function checkAndAddColumn() {
+    const getColumns = `show columns from ${collection}`;
+    config.query(getColumns, (err, results) => {
+      if (err) {
+        console.error("Error querying columns:", err);
+        res.status(500).json({ error: "Internal server error" });
+        return;
+      }
+      const existingColumns = results.map((column) => column.Field);
+      const newColumns = Object.keys(records[0]).filter(
+        (column) => !existingColumns.includes(column)
+      );
+
+      if (newColumns.length > 0) {
+        const alterTableQuery = `ALTER TABLE ${collection} ADD COLUMN `;
+        const columnDefinitions = newColumns
+          .map(
+            (column) => `${column} ${convert.getColumnType(records[0][column])}`
+          )
+          .join(", ");
+        const fullQuery = `${alterTableQuery} ${columnDefinitions}`;
+        config.query(fullQuery, (error) => {
+          if (error) {
+            console.error("Error adding columns:", error);
+            res.status(500).json({ error: "Internal server error" });
+            return;
+          }
+          console.log(
+            `Added columns ${newColumns.join(", ")} to table '${collection}'`
+          );
+          insertData();
+        });
+      } else {
+        insertData();
+      }
+    });
   }
 
   function insertData() {
