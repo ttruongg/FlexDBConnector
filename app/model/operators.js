@@ -8,11 +8,16 @@ const operators = [
 ];
 
 const typeMapping = {
-  'string': 'varchar(255)',
-  'number': 'int',
-  'boolean': 'boolean'
+  string: "varchar(255)",
+  number: "int",
+  boolean: "boolean",
+  object: (value) => {
+    if (value instanceof Date) {
+      return "datetime";
+    }
+  },
   // other
-}
+};
 
 function convertQuery(jsonQuery) {
   const { collection, query } = jsonQuery;
@@ -42,30 +47,68 @@ function convertQuery(jsonQuery) {
   return mysqlQuery.join(" AND ");
 }
 
-function getColumnType(value){
+function getColumnType(value) {
   const type = typeof value;
+  if (isDateString(value)) {
+    return "date";
+  } else if (Array.isArray(value)) {
+    return "json";
+  }
   return typeMapping[type];
 }
 
 function convertDateFields(records) {
-  return records.map(record => {
-      const newRecord = { ...record };
-      for (const key in newRecord) {
-          if (isDateString(newRecord[key])) {
-              newRecord[key] = new Date(newRecord[key]);
-          }
+  return records.map((record) => {
+    const newRecord = { ...record };
+    for (const key in newRecord) {
+      if (isDateString(newRecord[key])) {
+        newRecord[key] = new Date(newRecord[key]);
       }
-      return newRecord;
+    }
+    return newRecord;
   });
 }
 
+function isDateString(value) {
+  // const value = date.format(
 
-function isDateString(value){
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  //   new Date("December 17, 1995 03:24:00"),
+  //   "YYYY/MM/DD HH:mm:ss"
+  // );
+  return (
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) //|| //  YYYY-MM-DD
+    // (typeof value === "string" && /^\d{2}-\d{2}-\d{4}$/.test(value)) || //  DD-MM-YYYY
+    // (typeof value === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) //  MM/DD/YYYY
+  );
 }
 
+// function isDateString(value) {
+//   if (typeof value !== "string") return false;
 
+//   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+//     return true;
+//   }
 
+//   if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
 
+//     const parts = value.split("-");
+//     const formattedValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+//     return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
+//   }
 
-module.exports = {convertQuery, typeMapping, getColumnType, convertDateFields};
+//   if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+
+//     const parts = value.split("/");
+//     const formattedValue = `${parts[2]}-${parts[0]}-${parts[1]}`;
+//     return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
+//   }
+
+//   return false;
+// }
+
+module.exports = {
+  convertQuery,
+  typeMapping,
+  getColumnType,
+  convertDateFields,
+};

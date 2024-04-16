@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 
-const propertiesReader = require('properties-reader');
-const properties = propertiesReader('config.properties');
+const propertiesReader = require("properties-reader");
+const properties = propertiesReader("config.properties");
 
-const dbType = properties.get('database.type');
+const dbType = properties.get("database.type");
 
 const app = express();
 app.use(express.json());
