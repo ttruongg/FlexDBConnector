@@ -7,17 +7,17 @@ const operators = [
   { mongodb: "$ne", mysql: "!=" },
 ];
 
-const typeMapping = {
-  string: "varchar(255)",
-  number: "int",
-  boolean: "boolean",
-  object: (value) => {
-    if (value instanceof Date) {
-      return "datetime";
-    }
-  },
-  // other
-};
+// const typeMapping = {
+//   string: "varchar(255)",
+//   number: "int",
+//   boolean: "boolean",
+//   object: (value) => {
+//     if (value instanceof Date) {
+//       return "datetime";
+//     }
+//   },
+//   // other
+// };
 
 function convertQuery(jsonQuery) {
   const { collection, query } = jsonQuery;
@@ -48,13 +48,31 @@ function convertQuery(jsonQuery) {
 }
 
 function getColumnType(value) {
-  const type = typeof value;
-  if (isDateString(value)) {
-    return "date";
+  if (typeof value === "string") {
+    const date = new Date(value);
+
+    if (!isNaN(date.getTime())) {
+      return "date";
+    } else {
+      return "varchar(255)";
+    }
+  } else if (typeof value === "number") {
+    return "int";
+  } else if (typeof value === "boolean") {
+    return "boolean";
   } else if (Array.isArray(value)) {
-    return "json";
+    return "array";
+  } else {
+    return "undefined";
   }
-  return typeMapping[type];
+
+  // const type = typeof value;
+  // if (isDateString(value)) {
+  //   return "date";
+  // } else if (Array.isArray(value)) {
+  //   return "json";
+  // }
+  // return typeMapping[type];
 }
 
 function convertDateFields(records) {
@@ -69,18 +87,18 @@ function convertDateFields(records) {
   });
 }
 
-function isDateString(value) {
-  // const value = date.format(
+// function isDateString(value) {
+//   // const value = date.format(
 
-  //   new Date("December 17, 1995 03:24:00"),
-  //   "YYYY/MM/DD HH:mm:ss"
-  // );
-  return (
-    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) //|| //  YYYY-MM-DD
-    // (typeof value === "string" && /^\d{2}-\d{2}-\d{4}$/.test(value)) || //  DD-MM-YYYY
-    // (typeof value === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) //  MM/DD/YYYY
-  );
-}
+//   //   new Date("December 17, 1995 03:24:00"),
+//   //   "YYYY/MM/DD HH:mm:ss"
+//   // );
+//   return (
+//     typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) //|| //  YYYY-MM-DD
+//     // (typeof value === "string" && /^\d{2}-\d{2}-\d{4}$/.test(value)) || //  DD-MM-YYYY
+//     // (typeof value === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) //  MM/DD/YYYY
+//   );
+// }
 
 // function isDateString(value) {
 //   if (typeof value !== "string") return false;
@@ -108,7 +126,7 @@ function isDateString(value) {
 
 module.exports = {
   convertQuery,
-  typeMapping,
+//  typeMapping,
   getColumnType,
   convertDateFields,
 };
