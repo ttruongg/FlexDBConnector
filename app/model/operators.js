@@ -1,3 +1,5 @@
+const { Json } = require("sequelize/lib/utils");
+
 const operators = [
   { mongodb: "$eq", mysql: "=" },
   { mongodb: "$gt", mysql: ">" },
@@ -61,9 +63,12 @@ function getColumnType(value) {
   } else if (typeof value === "boolean") {
     return "boolean";
   } else if (Array.isArray(value)) {
-    return "array";
+    return "json";
+
+  } else if(typeof value === 'object') {
+    return "json";
   } else {
-    return "undefined";
+    return 'undefined';
   }
 
   // const type = typeof value;
@@ -100,33 +105,47 @@ function convertDateFields(records) {
 //   );
 // }
 
-// function isDateString(value) {
-//   if (typeof value !== "string") return false;
+function isDateString(value) {
+  if (typeof value !== "string") return false;
 
-//   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-//     return true;
-//   }
+  // if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+  //   return true;
+  // }
 
-//   if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+  // if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
 
-//     const parts = value.split("-");
-//     const formattedValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
-//     return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
-//   }
+  //   const parts = value.split("-");
+  //   const formattedValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+  //   return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
+  // }
 
-//   if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    const parts = value.split("/");
+    const formattedValue = `${parts[2]}-${parts[0]}-${parts[1]}`;
+    return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
+  }
 
-//     const parts = value.split("/");
-//     const formattedValue = `${parts[2]}-${parts[0]}-${parts[1]}`;
-//     return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
-//   }
+  return false;
+}
 
-//   return false;
-// }
+function isArray(value) {
+  return Array.isArray(value);
+}
+
+function arrayToJsonArray(array) {
+  return JSON.stringify(array);
+}
+
+function objectToJson(object){
+  return JSON.stringify(object);
+}
 
 module.exports = {
   convertQuery,
-//  typeMapping,
+  //  typeMapping,
+  isArray,
+  arrayToJsonArray,
+  objectToJson,
   getColumnType,
   convertDateFields,
 };
