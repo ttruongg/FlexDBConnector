@@ -265,21 +265,50 @@ exports.insertRecord = async (req, res) => {
   }
 
   function insertData() {
+    const values = records.map((record) => {
+      // Duyệt qua mỗi trường trong mỗi bản ghi
+      const recordValues = Object.values(record).map((value) => {
+        // Nếu giá trị là một mảng, chuyển đổi thành chuỗi JSON
+        if (convert.isArray(value)) {
+          return convert.arrayToJsonArray(value);
+        } else if (typeof value === 'object') {
+          return convert.objectToJson(value);
+        }
+        return value;
+      });
+      return recordValues;
+    });
+
     const insertQuery = `INSERT INTO ${collection} (${Object.keys(
       records[0]
     ).join(", ")}) VALUES ?`;
-    const values = records.map((record) => Object.values(record));
     config.query(insertQuery, [values], (err, result) => {
       if (err) {
         console.log(insertQuery);
         console.error("Error when inserting data", err);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Error when inserting data" });
         return;
       }
       console.log("Data inserted successfully:", result);
       res.json({ message: "Data inserted successfully" });
     });
   }
+  // function insertData() {
+  //   const insertQuery = `INSERT INTO ${collection} (${Object.keys(
+  //     records[0]
+  //   ).join(", ")}) VALUES ?`;
+  //   const values = records.map((record) => Object.values(record));
+  //   config.query(insertQuery, [values], (err, result) => {
+  //     if (err) {
+  //       console.log(insertQuery);
+  //       console.error("Error when inserting data", err);
+  //       res.status(500).json({ error: "Error when inserting data" });
+  //       return;
+  //     }
+  //     console.log("Data inserted successfully:", result);
+  //     res.json({ message: "Data inserted successfully" });
+  //   });
+  // }
 };
 
 exports.aggregate = async (req, res) => {
