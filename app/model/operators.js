@@ -1,5 +1,3 @@
-const { Json } = require("sequelize/lib/utils");
-
 const operators = [
   { mongodb: "$eq", mysql: "=" },
   { mongodb: "$gt", mysql: ">" },
@@ -8,18 +6,6 @@ const operators = [
   { mongodb: "$lte", mysql: "<=" },
   { mongodb: "$ne", mysql: "!=" },
 ];
-
-// const typeMapping = {
-//   string: "varchar(255)",
-//   number: "int",
-//   boolean: "boolean",
-//   object: (value) => {
-//     if (value instanceof Date) {
-//       return "datetime";
-//     }
-//   },
-//   // other
-// };
 
 function convertQuery(jsonQuery) {
   const { collection, query } = jsonQuery;
@@ -49,37 +35,6 @@ function convertQuery(jsonQuery) {
   return mysqlQuery.join(" AND ");
 }
 
-function getColumnType(value) {
-  if (typeof value === "string") {
-    const date = new Date(value);
-
-    if (!isNaN(date.getTime())) {
-      return "date";
-    } else {
-      return "varchar(255)";
-    }
-  } else if (typeof value === "number") {
-    return "int";
-  } else if (typeof value === "boolean") {
-    return "boolean";
-  } else if (Array.isArray(value)) {
-    return "json";
-
-  } else if(typeof value === 'object') {
-    return "json";
-  } else {
-    return 'undefined';
-  }
-
-  // const type = typeof value;
-  // if (isDateString(value)) {
-  //   return "date";
-  // } else if (Array.isArray(value)) {
-  //   return "json";
-  // }
-  // return typeMapping[type];
-}
-
 function convertDateFields(records) {
   return records.map((record) => {
     const newRecord = { ...record };
@@ -92,32 +47,8 @@ function convertDateFields(records) {
   });
 }
 
-// function isDateString(value) {
-//   // const value = date.format(
-
-//   //   new Date("December 17, 1995 03:24:00"),
-//   //   "YYYY/MM/DD HH:mm:ss"
-//   // );
-//   return (
-//     typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) //|| //  YYYY-MM-DD
-//     // (typeof value === "string" && /^\d{2}-\d{2}-\d{4}$/.test(value)) || //  DD-MM-YYYY
-//     // (typeof value === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) //  MM/DD/YYYY
-//   );
-// }
-
 function isDateString(value) {
   if (typeof value !== "string") return false;
-
-  // if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-  //   return true;
-  // }
-
-  // if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
-
-  //   const parts = value.split("-");
-  //   const formattedValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
-  //   return /^\d{4}-\d{2}-\d{2}$/.test(formattedValue);
-  // }
 
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
     const parts = value.split("/");
@@ -136,8 +67,29 @@ function arrayToJsonArray(array) {
   return JSON.stringify(array);
 }
 
-function objectToJson(object){
+function objectToJson(object) {
   return JSON.stringify(object);
+}
+
+function getColumnType(value) {
+  if (typeof value === "number") return "int";
+  if (typeof value === "boolean") return "boolean";
+  if (Number(value)) return "int";
+  if (Array.isArray(value) || typeof value === "object") return "json";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return "datetime";
+  }
+  if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(value)) {
+    var d = new Date(value);
+    if (d.toISOString() === value) return "datetime";
+  }
+  if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+    return "datetime";
+  }
+  if (/[a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{2}\s\d{4}\s\d{2}:\d{2}/.test(value)) {
+    return "datetime";
+  }
+  return "varchar(250)";
 }
 
 module.exports = {

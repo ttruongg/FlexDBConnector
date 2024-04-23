@@ -10,17 +10,6 @@ app.use(express.json());
 
 console.log(dbType);
 
-const array = [
-  "c",
-  "c++",
-  "java",
-  "nodejs"
-];
-
-const jsonString = JSON.stringify(array);
-console.log(jsonString);
-
-
 require("./app/routes/mongoRoutes.js")(app);
 
 app.get("/", (req, res) => {

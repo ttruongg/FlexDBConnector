@@ -1,7 +1,3 @@
-//const dbConfig = require("../db/mongoConfig.js");
-
-//const sqlConnection = require("../db/mysqlConfig.js");
-
 const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
@@ -10,12 +6,6 @@ const properties = propertiesReader("config.properties");
 
 const dbType = properties.get("database.type");
 const convert = require("../model/operators.js");
-// const db = {};
-// db.mongoose = mongoose;
-// db.url = dbConfig.url;
-// //db.user = require("../model/mongoModel.js")(mongoose);
-
-// const User = db.user;
 
 let config;
 
@@ -266,13 +256,13 @@ exports.insertRecord = async (req, res) => {
 
   function insertData() {
     const values = records.map((record) => {
-      // Duyệt qua mỗi trường trong mỗi bản ghi
       const recordValues = Object.values(record).map((value) => {
-        // Nếu giá trị là một mảng, chuyển đổi thành chuỗi JSON
         if (convert.isArray(value)) {
           return convert.arrayToJsonArray(value);
-        } else if (typeof value === 'object') {
+        } else if (typeof value === "object") {
           return convert.objectToJson(value);
+        } else if (convert.getColumnType(value) === "date") {
+          return new Date(value);
         }
         return value;
       });
@@ -284,7 +274,7 @@ exports.insertRecord = async (req, res) => {
     ).join(", ")}) VALUES ?`;
     config.query(insertQuery, [values], (err, result) => {
       if (err) {
-        console.log(insertQuery);
+        //console.log(insertQuery);
         console.error("Error when inserting data", err);
         res.status(500).json({ error: "Error when inserting data" });
         return;
@@ -293,22 +283,6 @@ exports.insertRecord = async (req, res) => {
       res.json({ message: "Data inserted successfully" });
     });
   }
-  // function insertData() {
-  //   const insertQuery = `INSERT INTO ${collection} (${Object.keys(
-  //     records[0]
-  //   ).join(", ")}) VALUES ?`;
-  //   const values = records.map((record) => Object.values(record));
-  //   config.query(insertQuery, [values], (err, result) => {
-  //     if (err) {
-  //       console.log(insertQuery);
-  //       console.error("Error when inserting data", err);
-  //       res.status(500).json({ error: "Error when inserting data" });
-  //       return;
-  //     }
-  //     console.log("Data inserted successfully:", result);
-  //     res.json({ message: "Data inserted successfully" });
-  //   });
-  // }
 };
 
 exports.aggregate = async (req, res) => {
