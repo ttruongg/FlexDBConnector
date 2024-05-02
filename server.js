@@ -10,6 +10,8 @@ app.use(express.json());
 
 console.log(dbType);
 
+const get = require("./app/controller/initTable.js");
+
 require("./app/routes/mongoRoutes.js")(app);
 
 app.get("/", (req, res) => {
