@@ -1,72 +1,60 @@
-// //const db = propertiesReader("config.properties").get("database.type");
+const PropertiesReader = require("properties-reader");
+
+function getAllSections(filePath) {
+  const properties = PropertiesReader(filePath);
+  const allProperties = properties.getAllProperties();
+  const sections = [];
+
+  for (const property in allProperties) {
+    if (property.includes(".")) {
+      const groupName = property.split(".")[0];
+      if (!sections.includes(groupName)) {
+        sections.push(groupName);
+      }
+    }
+  }
+
+  return sections;
+}
+
+function getTablesAndProperties(filePath) {
+  const properties = PropertiesReader(filePath);
+  const allProperties = properties.getAllProperties();
+  const tablesArray = [];
+
+  for (const [key, value] of Object.entries(allProperties)) {
+    const [tableName, property] = key.split(".");
+    let currentTable = tablesArray.find(
+      (table) => table.tablename === tableName
+    );
+    if (!currentTable) {
+      currentTable = {
+        tablename: tableName,
+        columns: {},
+        primaryKey: null,
+        foreignKeys: {
+          referenceTable: null,
+          referenceColumn: null,
+        },
+      };
+      tablesArray.push(currentTable);
+    }
+
+    if (property === "primaryKey") {
+      currentTable.primaryKey = value;
+    } else if (property.startsWith("foreignKeys")) {
+      const fkProperty = key.split(".").pop();
+      currentTable.foreignKeys[fkProperty] = value;
+    } else {
+      currentTable.columns[property] = value;
+    }
+  }
+
+  return tablesArray;
+}
 
 
-// function initTables() {
-//   const propertiesReader = require("properties-reader");
-//   const properties = propertiesReader("tables.properties");
-//   const config = require("../db/mysqlConfig.js");
-
-//   let createTableQueries = [];
-
-//   // Lặp qua tất cả các bảng trong file properties
-//   properties.each((key, value) => {
-//     // Nếu key là 'tablename', bắt đầu xử lý bảng mới
-//     if (key === "tablename") {
-//       let tableName = value;
-//       let columns = [];
-//       let primaryKey = null;
-//       let foreignKeys = [];
-
-      
-//       properties.each((innerKey, innerValue) => {
-//         if (innerKey !== "tablename") {
-//           if (innerKey === "primaryKey") {
-//             primaryKey = innerValue;
-//           } else if (innerKey === "foreignKeys") {
-//             const [refTable, refColumn] = innerValue.split(".");
-//             foreignKeys.push({
-//               referenceTable: refTable.trim(),
-//               referenceColumn: refColumn.trim(),
-//             });
-//           } else {
-//             columns.push(`${innerKey} ${innerValue}`);
-//           }
-//         }
-//       });
-
-      
-//       let query = `CREATE TABLE ${tableName} (\n`;
-//       query += columns.join(",\n");
-//       if (primaryKey) {
-//         query += `,\nPRIMARY KEY (${primaryKey})`;
-//       }
-//       if (foreignKeys.length > 0) {
-//         foreignKeys.forEach((fk) => {
-//           query += `,\nFOREIGN KEY (${fk.referenceColumn}) REFERENCES ${fk.referenceTable}(${primaryKey})`;
-//         });
-//       }
-//       query += "\n);";
-
-//       // Thêm câu lệnh tạo bảng vào mảng
-//       createTableQueries.push(query);
-//     }
-
-//     createTableQueries.forEach((query) => {
-//       console.log(query);
-//     });
-//   });
-
-//   //   properties.each((key, value) => {
-//   //     let createQuery = "";
-//   //     if (key === 'tablename') {
-//   //         createQuery += `create table ${properties.get('tablename')} (`
-//   //     }
-//   //   })
-
-//   //   console.log();
-//   //   properties.each((key, value) => {
-//   //     console.log(key + ":" + value);
-//   //   });
-// }
-
-// module.exports = { initTables };
+module.exports = {
+  getAllSections,
+  getTablesAndProperties,
+};
