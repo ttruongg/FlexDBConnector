@@ -53,8 +53,43 @@ function getTablesAndProperties(filePath) {
   return tablesArray;
 }
 
+function initTable(config) {
+  //config = require("../db/mysqlConfig.js");
+  const tablesArray = getTablesAndProperties("tables.properties");
+
+  tablesArray.forEach((table) => {
+    const { tablename, columns, primaryKey, foreignKeys } = table;
+    let query = `CREATE TABLE IF NOT EXISTS ${tablename} (`;
+
+    Object.entries(columns).forEach(([columnName, columnType]) => {
+      query += `${columnName} ${columnType}, `;
+    });
+
+    query += `PRIMARY KEY (${primaryKey})`;
+
+    if (
+      foreignKeys.referenceTable &&
+      foreignKeys.referenceColumn &&
+      foreignKeys.field
+    ) {
+      query += `, FOREIGN KEY (${foreignKeys.field}) REFERENCES ${foreignKeys.referenceTable}(${foreignKeys.referenceColumn})`;
+    }
+
+    query += `)`;
+
+    config.query(query, (err, result) => {
+      if (err) {
+        console.error(`Error when creating ${tablename}`, err);
+        return;
+      }
+      console.log(`Table ${tablename} created successfully`, result);
+      console.log(query);
+    });
+  });
+}
 
 module.exports = {
   getAllSections,
   getTablesAndProperties,
+  initTable,
 };

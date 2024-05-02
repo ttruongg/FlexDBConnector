@@ -12,6 +12,14 @@ console.log(dbType);
 
 const get = require("./app/controller/initTable.js");
 
+// Lấy thông tin của các bảng từ file properties
+const sections = get.getAllSections("tables.properties");
+console.log(sections); 
+
+
+const test = get.getTablesAndProperties("tables.properties");
+console.log(test);
+
 require("./app/routes/mongoRoutes.js")(app);
 
 app.get("/", (req, res) => {

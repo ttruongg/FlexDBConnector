@@ -7,12 +7,14 @@ const properties = propertiesReader("config.properties");
 const dbType = properties.get("database.type");
 const convert = require("../model/operators.js");
 
+const { initTable } = require("../controller/initTable.js");
 let config;
 
 if (dbType === "mongodb") {
   config = require("../db/mongoConfig.js");
 } else {
   config = require("../db/mysqlConfig.js");
+  initTable(config);
 }
 
 exports.findAll = (req, res) => {
