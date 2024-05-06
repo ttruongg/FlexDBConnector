@@ -6,7 +6,7 @@ const properties = propertiesReader("config.properties");
 
 const dbType = properties.get("database.type");
 const convert = require("../model/operators.js");
-
+const { convertToMySQL } = require("../controller/converter.js");
 const { initTable } = require("../controller/initTable.js");
 let config;
 
@@ -14,7 +14,7 @@ if (dbType === "mongodb") {
   config = require("../db/mongoConfig.js");
 } else {
   config = require("../db/mysqlConfig.js");
-  initTable(config);
+  //initTable(config);
 }
 
 exports.findAll = (req, res) => {
@@ -148,9 +148,8 @@ exports.executeQuery = async (req, res) => {
         .toArray();
       res.json(result);
     } else {
-      const condition = convert.convertQuery(req.body);
+      const condition = convert.convertOperator(req.body);
       sqlString = `SELECT * FROM ${collection} WHERE ${condition}`;
-      console.log(sqlString);
       config.query(sqlString, (error, results) => {
         if (error) {
           console.error("Error executing SQL query: " + error.message);
@@ -290,17 +289,34 @@ exports.insertRecord = async (req, res) => {
 exports.aggregate = async (req, res) => {
   const { collection, pipeline } = req.body;
 
+  if (!pipeline || !Array.isArray(pipeline)) {
+    return res.status(400).json({ error: "Pipeline must be an array" });
+  }
   try {
-    if (!pipeline || !Array.isArray(pipeline)) {
-      return res.status(400).json({ error: "Pipeline must be an array" });
+    if (dbType === "mongodb") {
+      const result = await mongoose.connection.db
+        .collection(collection)
+        .aggregate(pipeline)
+        .toArray();
+
+      res.json(result);
+    } else {
+      const sqlQuery = convertToMySQL(collection, pipeline);
+      if (!sqlQuery) {
+        return res
+          .status(500)
+          .json({ error: "Failed to convert pipeline to SQL" });
+      }
+      config.query(sqlQuery, (error, results) => {
+        if (error) {
+          console.error("Error executing SQL query: " + error.message);
+          res.status(500).json({ success: false, error: error.message });
+          console.log(sqlQuery);
+          return;
+        }
+        res.json(results);
+      });
     }
-
-    const result = await mongoose.connection.db
-      .collection(collection)
-      .aggregate(pipeline)
-      .toArray();
-
-    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

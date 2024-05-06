@@ -7,14 +7,14 @@ const operators = [
   { mongodb: "$ne", mysql: "!=" },
 ];
 
-function convertQuery(jsonQuery) {
+function convertOperator(jsonQuery) {
   const { collection, query } = jsonQuery;
   const mysqlQuery = [];
 
   for (const key in query) {
     if (key === "$or" || key === "$and") {
       const subQueries = query[key].map((item) =>
-        convertQuery({ collection, query: item })
+        convertOperator({ collection, query: item })
       );
       mysqlQuery.push(
         `(${subQueries.join(` ${key.slice(1).toUpperCase()} `)})`
@@ -93,11 +93,12 @@ function getColumnType(value) {
 }
 
 module.exports = {
-  convertQuery,
+  convertOperator,
   //  typeMapping,
   isArray,
   arrayToJsonArray,
   objectToJson,
   getColumnType,
   convertDateFields,
+  operators
 };
