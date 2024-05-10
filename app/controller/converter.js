@@ -8,8 +8,6 @@ function convertToMySQL(collection, pipeline) {
     $sort: convertSort,
     $limit: convertLimit,
     $project: convertProject,
-    //  '$lookup': convertLookup,
-    //
   };
 
   pipeline.forEach((stage) => {
@@ -62,22 +60,6 @@ function convertMatch(sqlQuery, matchStage) {
   return mysqlQuery.join(" AND ");
 }
 
-function convertGroup(sqlQuery, groupStage) {
-  let groupByClause = "";
-  let fieldsToSelect = "";
-
-  for (const key in groupStage) {
-    if (key === "_id") {
-      groupByClause += ` GROUP BY ${groupStage[key]}`;
-    } else {
-      fieldsToSelect += `, ${key}(${groupStage[key]}) AS ${key}`;
-    }
-  }
-
-  sqlQuery += fieldsToSelect + groupByClause;
-  return sqlQuery;
-}
-
 function convertSort(sqlQuery, sortStage) {
   let orderByClause = "";
   for (const key in sortStage) {
@@ -102,19 +84,62 @@ function convertLimit(sqlQuery, limitStage) {
 function convertProject(sqlQuery, projectStage) {
   let selectFields = "";
 
-  // Xác định các trường cần được chọn
   for (const key in projectStage) {
     if (projectStage.hasOwnProperty(key) && projectStage[key] === 1) {
       selectFields += `${key}, `;
     }
   }
 
-  // Thay thế SELECT * thành SELECT các trường đã được chỉ định
   if (selectFields !== "") {
     sqlQuery = sqlQuery.replace(
       /SELECT \* FROM/,
       `SELECT ${selectFields.slice(0, -2)} FROM`
     );
+  }
+
+  return sqlQuery;
+}
+
+function getAggregationFunction(aggregationKey) {
+  switch (aggregationKey) {
+    case "$sum":
+      return "SUM";
+    case "$avg":
+      return "AVG";
+    case "$min":
+      return "MIN";
+    case "$max":
+      return "MAX";
+    default:
+      throw new Error(`Unsupported aggregation function: ${aggregationKey}`);
+  }
+}
+
+function convertGroup(sqlQuery, groupStage) {
+  let groupByClause = "";
+  let selectClause = "SELECT ";
+
+  for (const key in groupStage) {
+    if (groupStage.hasOwnProperty(key)) {
+      if (key === "_id") {
+        groupByClause += `${groupStage[key]} `;
+        selectClause += `${groupStage[key]}, `;
+      } else {
+        for (const aggregationKey in groupStage[key]) {
+          if (groupStage[key].hasOwnProperty(aggregationKey)) {
+            const aggregationFunction = getAggregationFunction(aggregationKey);
+            const field = groupStage[key][aggregationKey];
+            selectClause += `${aggregationFunction}(${field}) AS ${key}, `;
+          }
+        }
+      }
+    }
+  }
+
+  if (groupByClause !== "") {
+    sqlQuery = `${selectClause.slice(0, -2)} FROM ${
+      sqlQuery.split(" ")[3]
+    } GROUP BY ${groupByClause}`;
   }
 
   return sqlQuery;
