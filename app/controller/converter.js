@@ -8,6 +8,7 @@ function convertToMySQL(collection, pipeline) {
     $sort: convertSort,
     $limit: convertLimit,
     $project: convertProject,
+    $lookup: convertLookup,
   };
 
   pipeline.forEach((stage) => {
@@ -141,6 +142,21 @@ function convertGroup(sqlQuery, groupStage) {
       sqlQuery.split(" ")[3]
     } GROUP BY ${groupByClause}`;
   }
+
+  return sqlQuery;
+}
+
+function convertLookup(sqlQuery, lookupStage) {
+  const from = lookupStage.from;
+  const localField = lookupStage.localField;
+  const foreignField = lookupStage.foreignField;
+ // const as = lookupStage.as;
+
+  let joinClause = `FROM ${sqlQuery.split(" ")[3]} inner join ${from} on ${
+    sqlQuery.split(" ")[3]
+  }.${localField} = ${from}.${foreignField}`;
+  let tmp = `FROM ${sqlQuery.split(" ")[3]}`;
+  sqlQuery = sqlQuery.replace(tmp, joinClause);
 
   return sqlQuery;
 }
