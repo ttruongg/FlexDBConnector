@@ -314,6 +314,7 @@ exports.aggregate = async (req, res) => {
           console.log(sqlQuery);
           return;
         }
+        console.log(sqlQuery);
         res.json(results);
       });
     }
