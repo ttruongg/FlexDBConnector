@@ -6,6 +6,8 @@ function convertToMySQL(collection, pipeline) {
     $match: convertMatch,
     $group: convertGroup,
     $sort: convertSort,
+    $limit: convertLimit,
+    $project: convertProject,
     //  '$lookup': convertLookup,
     //
   };
@@ -18,6 +20,8 @@ function convertToMySQL(collection, pipeline) {
           if (key === "$match") {
             const condition = convertMatch(sqlQuery, stage[key]);
             sqlQuery += " where " + condition;
+          } else if (key === "$limit") {
+            sqlQuery += " limit " + stage[key];
           } else {
             sqlQuery = operator(sqlQuery, stage[key]);
           }
@@ -59,18 +63,18 @@ function convertMatch(sqlQuery, matchStage) {
 }
 
 function convertGroup(sqlQuery, groupStage) {
-  let groupFields = "";
+  let groupByClause = "";
+  let fieldsToSelect = "";
+
   for (const key in groupStage) {
-    if (groupStage.hasOwnProperty(key)) {
-      if (groupFields !== "") {
-        groupFields += ", ";
-      }
-      groupFields += key;
+    if (key === "_id") {
+      groupByClause += ` GROUP BY ${groupStage[key]}`;
+    } else {
+      fieldsToSelect += `, ${key}(${groupStage[key]}) AS ${key}`;
     }
   }
-  if (groupFields !== "") {
-    sqlQuery += ` GROUP BY ${groupFields}`;
-  }
+
+  sqlQuery += fieldsToSelect + groupByClause;
   return sqlQuery;
 }
 
@@ -87,6 +91,32 @@ function convertSort(sqlQuery, sortStage) {
   if (orderByClause !== "") {
     sqlQuery += ` ORDER BY ${orderByClause}`;
   }
+  return sqlQuery;
+}
+
+function convertLimit(sqlQuery, limitStage) {
+  sqlQuery += " limit " + limitStage["$limit"];
+  return sqlQuery;
+}
+
+function convertProject(sqlQuery, projectStage) {
+  let selectFields = "";
+
+  // Xác định các trường cần được chọn
+  for (const key in projectStage) {
+    if (projectStage.hasOwnProperty(key) && projectStage[key] === 1) {
+      selectFields += `${key}, `;
+    }
+  }
+
+  // Thay thế SELECT * thành SELECT các trường đã được chỉ định
+  if (selectFields !== "") {
+    sqlQuery = sqlQuery.replace(
+      /SELECT \* FROM/,
+      `SELECT ${selectFields.slice(0, -2)} FROM`
+    );
+  }
+
   return sqlQuery;
 }
 
