@@ -1,22 +1,30 @@
 const PropertiesReader = require("properties-reader");
 
-function getAllSections(filePath) {
-  const properties = PropertiesReader(filePath);
-  const allProperties = properties.getAllProperties();
-  const sections = [];
+// get all table name from tables.properties file
+// function getAllSections(filePath) {
+//   const properties = PropertiesReader(filePath);
+//   const allProperties = properties.getAllProperties();
+//   const sections = [];
 
-  for (const property in allProperties) {
-    if (property.includes(".")) {
-      const groupName = property.split(".")[0];
-      if (!sections.includes(groupName)) {
-        sections.push(groupName);
-      }
-    }
-  }
+//   for (const property in allProperties) {
+//     if (property.includes(".")) {
+//       const groupName = property.split(".")[0];
+//       if (!sections.includes(groupName)) {
+//         sections.push(groupName);
+//       }
+//     }
+//   }
 
-  return sections;
-}
+//   return sections;
+// }
 
+
+
+
+/*
+ get table and properties from tables.properties, 
+ this function return an array of tables
+*/
 function getTablesAndProperties(filePath) {
   const properties = PropertiesReader(filePath);
   const allProperties = properties.getAllProperties();
@@ -53,8 +61,12 @@ function getTablesAndProperties(filePath) {
   return tablesArray;
 }
 
+/*
+  use getTablesAndProperties function to get array of table
+  implement create each table in array
+*/
 function initTable(config) {
-  //config = require("../db/mysqlConfig.js");
+  
   const tablesArray = getTablesAndProperties("tables.properties");
 
   tablesArray.forEach((table) => {
@@ -89,7 +101,7 @@ function initTable(config) {
 }
 
 module.exports = {
-  getAllSections,
+ // getAllSections,
   getTablesAndProperties,
   initTable,
 };

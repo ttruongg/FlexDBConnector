@@ -10,7 +10,7 @@ app.use(express.json());
 
 console.log(dbType);
 
-require("./app/routes/mongoRoutes.js")(app);
+require("./app/routes/data_Routes.js")(app);
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome" });

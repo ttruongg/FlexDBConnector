@@ -7,6 +7,11 @@ const operators = [
   { mongodb: "$ne", mysql: "!=" },
 ];
 
+/**
+ * convert operator in MongoDB to MySQL
+ * @param {json} jsonQuery 
+ * @returns condition string
+ */
 function convertOperator(jsonQuery) {
   const { collection, query } = jsonQuery;
   const mysqlQuery = [];
@@ -34,7 +39,9 @@ function convertOperator(jsonQuery) {
 
   return mysqlQuery.join(" AND ");
 }
-
+/*
+  Convert string to date if the value is of data type 'date'.
+*/
 function convertDateFields(records) {
   return records.map((record) => {
     const newRecord = { ...record };
@@ -59,18 +66,26 @@ function isDateString(value) {
   return false;
 }
 
+/* Check if value is an array */
 function isArray(value) {
   return Array.isArray(value);
 }
 
+/* convert array to JsonArray */
 function arrayToJsonArray(array) {
   return JSON.stringify(array);
 }
 
+/* convert object to Json, support store in MySQL */
 function objectToJson(object) {
   return JSON.stringify(object);
 }
 
+/**
+ * return data type of a value
+ * @param {*} value 
+ * @returns data type
+ */
 function getColumnType(value) {
   if (typeof value === "number") return "int";
   if (typeof value === "boolean") return "boolean";
@@ -94,11 +109,10 @@ function getColumnType(value) {
 
 module.exports = {
   convertOperator,
-  //  typeMapping,
   isArray,
   arrayToJsonArray,
   objectToJson,
   getColumnType,
   convertDateFields,
-  operators
+  operators,
 };
