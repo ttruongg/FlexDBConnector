@@ -17,22 +17,44 @@ if (dbType === "mongodb") {
   initTable(config);
 }
 
-exports.findAll = (req, res) => {
-  const name = req.query.name;
-  var condition = name
-    ? { name: { $regex: new RegExp(name), $options: "i" } }
-    : {};
-  User.find(condition)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "error occurred",
+/*
+  This function supports retrieving data from a collection
+  request with collection(table) name
+  response all data from that collection(table)
+*/
+exports.findAll = async (req, res) => {
+  try {
+    const { collection } = req.body;
+    if (dbType === "mongodb") {
+      const result = await mongoose.connection.db
+        .collection(collection)
+        .find()
+        .toArray();
+
+      res.json(result);
+    } else {
+      const sqlQuery = `SELECT * FROM ${collection}`;
+      config.query(sqlQuery, (error, results) => {
+        if (error) {
+          console.error("Error executing SQL query: " + error.message);
+          res.status(500).json({ success: false, error: error.message });
+          console.log(sqlQuery);
+          return;
+        }
+        console.log(sqlQuery);
+        res.json(results);
       });
-    });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
+/*
+  This function supports updating data
+  request includes collection(table) name, primary key, value
+  response: updated successfully or not 
+*/
 exports.update = async (req, res) => {
   const { collection, _id, values } = req.body;
 
@@ -40,7 +62,7 @@ exports.update = async (req, res) => {
     if (dbType === "mongodb") {
       let filter = {};
 
-      // Kiểm tra xem id có hợp lệ không
+      // id have to be ObjectID
       if (_id) {
         if (!mongoose.Types.ObjectId.isValid(_id)) {
           return res.status(400).json({ error: "Invalid document ID" });
@@ -55,15 +77,15 @@ exports.update = async (req, res) => {
         return res.status(400).json({ error: "No update fields provided" });
       }
 
-      // Thực hiện cập nhật
+      // Implement update
       const result = await mongoose.connection.db
         .collection(collection)
         .updateOne(
-          filter, // Bộ lọc để xác định tài liệu cần cập nhật
-          { $set: values } // Các trường cập nhật
+          filter, // the filter to determine record to be updated 
+          { $set: values } // fields need to be updated
         );
 
-      // Kiểm tra xem có tài liệu nào được cập nhật hay không
+      
       if (result.modifiedCount === 1) {
         res.json({ message: "Document updated successfully!" });
       } else {
@@ -91,6 +113,11 @@ exports.update = async (req, res) => {
   }
 };
 
+/*
+  This function supports deleting data
+  request includes collection(table) name, primary key
+  reponse: successfully or not
+*/
 exports.delete = async (req, res) => {
   const { collection, _id, condition } = req.body;
 
@@ -115,7 +142,6 @@ exports.delete = async (req, res) => {
 
     if (result.deletedCount === 1) {
       res.json({ message: "Deleted successfully!" });
-      deleteUser(collection, _id);
     } else {
       res.status(404).json({ error: "Document not found" });
     }
@@ -124,19 +150,14 @@ exports.delete = async (req, res) => {
   }
 };
 
-async function deleteUser(collection, userId) {
-  // const db = await connectToDatabase();
-  try {
-    await mongoose.connection.db
-      .collection(collection)
-      .deleteMany({ user_id: userId });
-    console.log("User and related jobs deleted successfully");
-  } catch (error) {
-    console.error("Error deleting user and related jobs:", error);
-    throw error;
-  }
-}
 
+/*
+  This function supports query data by condition.
+  The request includes the collection (table) name you want to 
+  query data from and the conditions of the query
+  The response is query result based on the conditions.
+
+*/
 exports.executeQuery = async (req, res) => {
   const { collection, query } = req.body;
 
@@ -164,6 +185,11 @@ exports.executeQuery = async (req, res) => {
   }
 };
 
+/*
+  This function supports insert data.
+  The request includes the collection(table) name and data need to be inserted.
+  The response is successfully or not.
+*/
 exports.insertRecord = async (req, res) => {
   const { collection, records } = req.body;
 
@@ -285,6 +311,12 @@ exports.insertRecord = async (req, res) => {
     });
   }
 };
+
+/*
+  This function allow you to group, sort, perform calculations, analyze data, and much more.
+  The request includes the collection(table) name and operators.
+  The response is query result based on the operators.
+*/
 
 exports.aggregate = async (req, res) => {
   const { collection, pipeline } = req.body;

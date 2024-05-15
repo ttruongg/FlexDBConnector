@@ -4,7 +4,7 @@ module.exports = (app) => {
     var router = require("express").Router();
 
     //findAll
-    router.get("/data", model.findAll);
+    router.post("/data", model.findAll);
 
     //update
     router.post("/data/update", model.update);
@@ -21,7 +21,7 @@ module.exports = (app) => {
     //aggregate
     router.post("/data/aggregate", model.aggregate);
 
-    app.use("/api/user", router);
+    app.use("/api", router);
 
 
 }

@@ -1,5 +1,6 @@
-const { operators } = require("./operators");
+const { operators } = require("../converter/operators");
 
+/* CONVERT QUERY FROM MONGODB TO MYSQL*/
 function convertToMySQL(collection, pipeline) {
   let sqlQuery = `SELECT * FROM ${collection}`;
   const operators = {
@@ -35,6 +36,13 @@ function convertToMySQL(collection, pipeline) {
   return sqlQuery;
 }
 
+/**
+ * Converts $match in MongoDB query to a MySQL query.
+ *
+ * @param {string} sqlQuery The MySQL query object.
+ * @param {json} matchStage The MongoDB query object to be converted.
+ * @returns {string} The converted MySQL query string.
+ */
 function convertMatch(sqlQuery, matchStage) {
   const mysqlQuery = [];
 
@@ -61,7 +69,12 @@ function convertMatch(sqlQuery, matchStage) {
 
   return mysqlQuery.join(" AND ");
 }
-
+/**
+ * Convert $sort in MongoDB to order by in MySQL
+ * @param {string} sqlQuery is a query
+ * @param {json} sortStage The MongoDB query object to be converted.
+ * @returns {string} The converted MySQL query string.
+ */
 function convertSort(sqlQuery, sortStage) {
   let orderByClause = "";
   for (const key in sortStage) {
@@ -78,11 +91,23 @@ function convertSort(sqlQuery, sortStage) {
   return sqlQuery;
 }
 
+/**
+ * Limits the number of documents returned
+ * @param {string} sqlQuery is a query string
+ * @param {json} limitStage The MongoDB query object to be converted.
+ * @returns The converted MySQL query string.
+ */
 function convertLimit(sqlQuery, limitStage) {
   sqlQuery += " limit " + limitStage["$limit"];
   return sqlQuery;
 }
 
+/**
+ * return the neccessary fields 
+ * @param {*} sqlQuery is a query string
+ * @param {*} projectStage The MongoDB query object to be converted.
+ * @returns The converted MySQL query string.
+ */
 function convertProject(sqlQuery, projectStage) {
   let selectFields = "";
 
@@ -102,6 +127,11 @@ function convertProject(sqlQuery, projectStage) {
   return sqlQuery;
 }
 
+/**
+ * 
+ * @param {aggregationKey} aggregationKey are aggregation operators in MongoDB
+ * @returns aggregate functions in MySQL
+ */
 function getAggregationFunction(aggregationKey) {
   switch (aggregationKey) {
     case "$sum":
@@ -116,7 +146,12 @@ function getAggregationFunction(aggregationKey) {
       throw new Error(`Unsupported aggregation function: ${aggregationKey}`);
   }
 }
-
+/**
+ * support group field 
+ * @param {string} sqlQuery is a query string
+ * @param {*} groupStage The MongoDB query object to be converted.
+ * @returns The converted MySQL query string.
+ */
 function convertGroup(sqlQuery, groupStage) {
   let groupByClause = "";
   let selectClause = "SELECT ";
@@ -147,6 +182,12 @@ function convertGroup(sqlQuery, groupStage) {
   return sqlQuery;
 }
 
+/**
+ * Operation with condition on groups
+ * @param {*} sqlQuery is a query string
+ * @param {*} havingStage The MongoDB query object to be converted.
+ * @returns The converted MySQL query string.
+ */
 function convertHaving(sqlQuery, havingStage) {
   let havingCondition = "";
 
@@ -166,6 +207,12 @@ function convertHaving(sqlQuery, havingStage) {
   return sqlQuery;
 }
 
+/**
+ * Support inner join, convert $lookup to inner join
+ * @param {*} sqlQuery is a query string
+ * @param {*} lookupStage The MongoDB query object to be converted.
+ * @returns The converted MySQL query string.
+ */
 function convertLookup(sqlQuery, lookupStage) {
   const from = lookupStage.from;
   const localField = lookupStage.localField;
