@@ -5,16 +5,16 @@ const propertiesReader = require("properties-reader");
 const properties = propertiesReader("config.properties");
 
 const dbType = properties.get("database.type");
-const convert = require("../model/operators.js");
-const { convertToMySQL } = require("../controller/converter.js");
-const { initTable } = require("../controller/initTable.js");
+const convert = require("../converter/operators.js");
+const { convertToMySQL } = require("../converter/converter.js");
+const { initTable } = require("./table_initializer.js");
 let config;
 
 if (dbType === "mongodb") {
-  config = require("../db/mongoConfig.js");
+  config = require("../config/mongoConfig.js");
 } else {
-  config = require("../db/mysqlConfig.js");
-  //initTable(config);
+  config = require("../config/mysqlConfig.js");
+  initTable(config);
 }
 
 exports.findAll = (req, res) => {

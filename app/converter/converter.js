@@ -1,10 +1,11 @@
-const { operators } = require("../model/operators");
+const { operators } = require("./operators");
 
 function convertToMySQL(collection, pipeline) {
   let sqlQuery = `SELECT * FROM ${collection}`;
   const operators = {
     $match: convertMatch,
     $group: convertGroup,
+    $having: convertHaving,
     $sort: convertSort,
     $limit: convertLimit,
     $project: convertProject,
@@ -146,11 +147,30 @@ function convertGroup(sqlQuery, groupStage) {
   return sqlQuery;
 }
 
+function convertHaving(sqlQuery, havingStage) {
+  let havingCondition = "";
+
+  for (const key in havingStage) {
+    if (havingStage.hasOwnProperty(key)) {
+      if (havingCondition !== "") {
+        havingCondition += " AND ";
+      }
+      havingCondition += `${key} ${havingStage[key]}`;
+    }
+  }
+
+  if (havingCondition !== "") {
+    sqlQuery += ` HAVING ${havingCondition}`;
+  }
+
+  return sqlQuery;
+}
+
 function convertLookup(sqlQuery, lookupStage) {
   const from = lookupStage.from;
   const localField = lookupStage.localField;
   const foreignField = lookupStage.foreignField;
- // const as = lookupStage.as;
+  // const as = lookupStage.as;
 
   let joinClause = `FROM ${sqlQuery.split(" ")[3]} inner join ${from} on ${
     sqlQuery.split(" ")[3]

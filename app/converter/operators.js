@@ -94,11 +94,10 @@ function getColumnType(value) {
 
 module.exports = {
   convertOperator,
-  //  typeMapping,
   isArray,
   arrayToJsonArray,
   objectToJson,
   getColumnType,
   convertDateFields,
-  operators
+  operators,
 };
