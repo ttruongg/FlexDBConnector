@@ -48,40 +48,6 @@ These are APIs that Node.js Express will export:
 | POST   | api/data/aggregate | allow you to group, sort, perform calculations, analyze data, and much more |
 
 
-<br>
-
 <hr>
 
-Test API with Insomnia or Postman, it's up to you.
-
-<b> For example: </b>
-
-Find users with an age greater than or equal to 30.
-
-![screen](https://github.com/ttruongg/FlexDBConnector/assets/106587727/13b266f1-9f66-4765-a22f-e10c99523a89)
-
-
-Update email and work_exp of user 
-
-![image](https://github.com/ttruongg/FlexDBConnector/assets/106587727/d35002c7-c93a-4aa7-b180-03f3edafeebe)
-
-Change the value of collection, _id, and value to update according to your database. <br>
-Example: <br>
-
-```bash
-{
-    "collection": "your_collection",   
-    "_id": "if_of_document_need_to_be_updated",
-    "values": 
-        {
-	// new value 
-        }
-}
-```
-
-Aggregation $lookup 
-
-![image](https://github.com/ttruongg/FlexDBConnector/assets/106587727/ddc2bffb-9d92-4d22-9c29-7a4492b5a49f)
-
-
-
+Your feedback and contributions are welcome!
