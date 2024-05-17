@@ -15,8 +15,11 @@ git clone https://github.com/ttruongg/FlexDBConnector.git
 
 ```
 <br>
+### Navigate to the project directory
+
 ```bash
 cd FlexDBConnector
+
 ```
 
 ### install dependencies
