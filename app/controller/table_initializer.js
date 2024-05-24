@@ -18,9 +18,6 @@ const PropertiesReader = require("properties-reader");
 //   return sections;
 // }
 
-
-
-
 /*
  get table and properties from tables.properties, 
  this function return an array of tables
@@ -66,15 +63,20 @@ function getTablesAndProperties(filePath) {
   implement create each table in array
 */
 function initTable(config) {
-  
   const tablesArray = getTablesAndProperties("tables.properties");
 
   tablesArray.forEach((table) => {
     const { tablename, columns, primaryKey, foreignKeys } = table;
     let query = `CREATE TABLE IF NOT EXISTS ${tablename} (`;
 
+    let isFirstColumn = true;
     Object.entries(columns).forEach(([columnName, columnType]) => {
-      query += `${columnName} ${columnType}, `;
+      if (isFirstColumn) {
+        query += `${columnName} ${columnType} AUTO_INCREMENT, `;
+        isFirstColumn = false;
+      } else {
+        query += `${columnName} ${columnType}, `;
+      }
     });
 
     query += `PRIMARY KEY (${primaryKey})`;
@@ -101,7 +103,7 @@ function initTable(config) {
 }
 
 module.exports = {
- // getAllSections,
+  // getAllSections,
   getTablesAndProperties,
   initTable,
 };
