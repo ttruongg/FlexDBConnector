@@ -15,7 +15,7 @@ git clone https://github.com/ttruongg/FlexDBConnector.git
 
 ```
 <br>
-### Navigate to the project directory
+<h3> Navigate to the project directory </h3> 
 
 ```bash
 cd FlexDBConnector
