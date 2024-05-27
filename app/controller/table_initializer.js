@@ -67,6 +67,12 @@ function initTable(config) {
 
   tablesArray.forEach((table) => {
     const { tablename, columns, primaryKey, foreignKeys } = table;
+    if (primaryKey !== "_id") {
+      console.error(
+        `The primary key column of table ${tablename} must be named _id. Please rename the primary key column to '_id' and try again.`
+      );
+      process.exit(1); 
+    }
     let query = `CREATE TABLE IF NOT EXISTS ${tablename} (`;
 
     let isFirstColumn = true;
