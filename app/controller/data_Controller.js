@@ -57,7 +57,8 @@ exports.findAll = async (req, res) => {
 */
 exports.update = async (req, res) => {
   const { collection, _id, values } = req.body;
-
+  const keys = Object.keys(req.body);
+  
   try {
     if (dbType === "mongodb") {
       let filter = {};
@@ -98,7 +99,7 @@ exports.update = async (req, res) => {
         .map(([key, value]) => `${key} = ${config.escape(value)}`)
         .join(", ");
 
-      updateString = `UPDATE ${collection} set ${updateValues} where id = ${_id}`;
+      updateString = `UPDATE ${collection} set ${updateValues} where ${keys[1]} = ${req.body[keys[1]]}`;
       config.query(updateString, (error, results) => {
         if (error) {
           console.error("Error updating user:", error);
