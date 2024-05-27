@@ -217,7 +217,7 @@ function convertLookup(sqlQuery, lookupStage) {
   const from = lookupStage.from;
   const localField = lookupStage.localField;
   const foreignField = lookupStage.foreignField;
-  // const as = lookupStage.as;
+  const as = lookupStage.as;
 
   let joinClause = `FROM ${sqlQuery.split(" ")[3]} inner join ${from} on ${
     sqlQuery.split(" ")[3]
