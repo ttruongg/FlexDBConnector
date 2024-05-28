@@ -58,7 +58,7 @@ exports.findAll = async (req, res) => {
 exports.update = async (req, res) => {
   const { collection, _id, values } = req.body;
   const keys = Object.keys(req.body);
-  
+
   try {
     if (dbType === "mongodb") {
       let filter = {};
@@ -82,11 +82,10 @@ exports.update = async (req, res) => {
       const result = await mongoose.connection.db
         .collection(collection)
         .updateOne(
-          filter, // the filter to determine record to be updated 
+          filter, // the filter to determine record to be updated
           { $set: values } // fields need to be updated
         );
 
-      
       if (result.modifiedCount === 1) {
         res.json({ message: "Document updated successfully!" });
       } else {
@@ -99,7 +98,9 @@ exports.update = async (req, res) => {
         .map(([key, value]) => `${key} = ${config.escape(value)}`)
         .join(", ");
 
-      updateString = `UPDATE ${collection} set ${updateValues} where ${keys[1]} = ${req.body[keys[1]]}`;
+      updateString = `UPDATE ${collection} set ${updateValues} where ${
+        keys[1]
+      } = ${req.body[keys[1]]}`;
       config.query(updateString, (error, results) => {
         if (error) {
           console.error("Error updating user:", error);
@@ -123,34 +124,46 @@ exports.delete = async (req, res) => {
   const { collection, _id, condition } = req.body;
 
   try {
-    let filter = {};
+    if (dbType === "mongodb") {
+      let filter = {};
 
-    if (_id) {
-      if (!mongoose.Types.ObjectId.isValid(_id)) {
-        return res.status(400).json({ error: "Invalid document ID" });
+      if (_id) {
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+          return res.status(400).json({ error: "Invalid document ID" });
+        }
+
+        filter._id = new mongoose.Types.ObjectId(_id);
       }
 
-      filter._id = new mongoose.Types.ObjectId(_id);
-    }
+      if (condition) {
+        filter = { ...filter, ...condition };
+      }
 
-    if (condition) {
-      filter = { ...filter, ...condition };
-    }
+      const result = await mongoose.connection.db
+        .collection(collection)
+        .deleteOne(filter);
 
-    const result = await mongoose.connection.db
-      .collection(collection)
-      .deleteOne(filter);
-
-    if (result.deletedCount === 1) {
-      res.json({ message: "Deleted successfully!" });
+      if (result.deletedCount === 1) {
+        res.json({ message: "Deleted successfully!" });
+      } else {
+        res.status(404).json({ error: "Document not found" });
+      }
     } else {
-      res.status(404).json({ error: "Document not found" });
+      deleteString = `DELETE FROM ${collection} where _id = ${_id}`;
+      config.query(deleteString, (error, results) => {
+        if (error) {
+          console.error("Error deleting :", error);
+          res.status(500).json({ error: "Error deleting " });
+          return;
+        }
+        res.json({ message: "deleted successfully" });
+      });
+
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 /*
   This function supports query data by condition.
