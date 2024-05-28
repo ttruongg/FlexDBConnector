@@ -184,17 +184,21 @@ exports.executeQuery = async (req, res) => {
       res.json(result);
     } else {
       const condition = convert.convertOperator(req.body);
-      sqlString = `SELECT * FROM ${collection} WHERE ${condition}`;
+      const sqlString = `SELECT * FROM ${collection} WHERE ${condition}`;
       config.query(sqlString, (error, results) => {
         if (error) {
+
           console.error("Error executing SQL query: " + error.message);
+          console.log(sqlString);
           res.status(500).json({ success: false, error: error.message });
           return;
         }
+        console.log(sqlString);
         res.json({ success: true, results });
       });
     }
   } catch (error) {
+    console.log(sqlString);
     res.status(500).json({ success: false, error: error.message });
   }
 };
