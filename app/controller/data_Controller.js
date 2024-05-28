@@ -220,7 +220,7 @@ exports.insertRecord = async (req, res) => {
 
         if (rows.length === 0) {
           const createTable = `CREATE TABLE IF NOT EXISTS ${collection} (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            _id INT AUTO_INCREMENT PRIMARY KEY,
             ${Object.entries(records[0])
               .map(([key, value]) => `${key} ${convert.getColumnType(value)}`)
               .join(",\n  ")}
